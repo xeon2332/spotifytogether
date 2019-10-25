@@ -1,0 +1,38 @@
+html
+    head
+        title= spotifytogether
+        link(rel="stylesheet", href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css")
+        style(type="text/css").
+            #join
+            {
+                display: none;
+            }
+    body
+        .container
+            .row
+                h1= "spotifytogether"
+                
+            .row
+                .btn-group
+                    a(href="/createlobby/" class="btn btn-primary") Create Lobby
+                    a(href="#" class="btn btn-primary" id="joinbtn") Join Lobby
+                    
+            br
+            .row#join
+                .col-sm-4
+                    .input-group
+                        input(type="text", id="id" class="form-control", placeholder="Lobby id")
+                        .input-group-append
+                            a(href="#" id="btn" class="btn btn-outline-secondary") Join
+
+        //- Button
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js")
+        script.
+            $("#joinbtn").click(function(){
+                $("#join").show()
+            })
+            
+            $("#btn").click(function(){
+                var link = "http://localhost:1337/lobby/" + $("#id").val()
+                window.location.replace(link)
+            })

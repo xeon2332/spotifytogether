@@ -1,0 +1,105 @@
+const express = require("express")
+const app = express()
+const pug = require("pug")
+const mysql = require("mysql")
+const path = require("path")
+const request = require("request")
+var cookieParser = require('cookie-parser')
+app.use(cookieParser())
+const sapi = require("./spotifyapi.js")
+const port = 1337
+
+var con = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: ""
+})
+
+app.use(express.json()) // for parsing application/json
+app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+
+con.connect(function(err){
+    if (err) throw err;
+    console.log("Connected to mysql server");
+})
+
+const api = require("./api.js")(app, con)
+
+app.get("/", function(req, res){
+    if(req.cookies.session == null)
+        res.sendFile(path.join(__dirname+"/index.html"))
+    else
+        res.render("index", { username: "test" })
+})
+
+app.get("/createlobby/", function(req, res){
+    // Generate lobby id
+    var lobby_id = Math.random().toString(36).substring(6)
+    var expiration = Math.floor((new Date().getTime() / 1000) + 3600)
+    var host = req.cookies.session
+    var sql = "INSERT INTO spotifytogether.lobbies (lobby_id, host, expiration) VALUES ( '" + lobby_id + "','" + host + "','" + expiration + "')"
+    
+    con.query(sql, function(err, result){
+        if(err) throw err
+        
+        res.cookie("host", "1").redirect("/lobby/" + lobby_id)
+    })
+})
+
+app.get("/lobby/:id", function(req, res){
+    if(req.cookies.host == null)
+    {
+        var lobby_id = req.params.id
+        var session = req.cookies.session
+        var sql = "UPDATE spotifytogether.lobbies SET guests='" + session + "' WHERE lobby_id='" + lobby_id + "'"
+        
+        con.query(sql, function(err, result){
+            res.render("lobby", { msg: "joined lobby" })  
+        })
+    }
+    else
+    {
+        res.render("lobby", { msg: "hosting lobby " + req.params.id })
+    }
+})
+
+app.get("/spotifylogin/", function(req, res){
+    request.post({
+        url: "https://accounts.spotify.com/api/token",
+        form: {
+            grant_type: "authorization_code",
+            code: req.query.code, 
+            redirect_uri: "http://localhost:1337/spotifylogin/",
+            client_id: "e1e37ca062f34bfe91907973c15353ca",
+            client_secret: "****"
+        },
+        headers: {
+            "content-type": "application/x-www-form-urlencoded"
+        }
+    }, function callback(err, ress, body){
+        if(ress.statusCode == 200)
+        {
+            var j = JSON.parse(body)
+            
+            var date = new Date()
+            var expiration = Math.round(date.getTime() / 1000) + j["expires_in"]
+            
+            // Storing in database
+            var sql = "INSERT INTO spotifytogether.users (sessionkey, access_token, refresh_token, expiration) VALUES ('test', '" + 
+                j['access_token'] + "','" + j['refresh_token'] + "','" + expiration + "')"
+            
+            con.query(sql, function(err, result){
+                if(err) throw err
+                console.log("inserted")
+                res
+                    .cookie("session", j["access_token"])
+                    .redirect("http://localhost:1337")
+            })
+            
+        }
+    })
+})
+
+app.set('view engine', 'pug')
+
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))

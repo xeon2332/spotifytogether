@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>spotifytogether</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col s4">
+                    <h1>spotifytogether</h1>
+                </div>
+                <div class="col s2 push-s6">
+                    <div class="wrap">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <a href="#" id="login" class="btn btn-primary">Login</a>  
+            </div>
+        </div>
+        
+        <!-- Including js files -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+        <script>            
+            $("#login").click(function(){
+                var scopes = "user-read-private user-read-email user-modify-playback-state user-read-currently-playing";
+                var client = "e1e37ca062f34bfe91907973c15353ca";
+                window.location.replace("https://accounts.spotify.com/authorize" + 
+                                        "?response_type=code" +
+                                        "&client_id=" + client +
+                                        (scopes ? "&scope=" + encodeURIComponent(scopes) : "") +
+                                        "&redirect_uri=http://localhost:1337/spotifylogin/");
+            });
+        </script>
+    </body>
+</html>

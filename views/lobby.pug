@@ -1,0 +1,78 @@
+html
+    head
+        title= spotifytogether
+    body
+        h1= msg
+        
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js")
+        script.
+            var track = ""
+
+            function getcookie(cookie_name)
+            {
+                var name = cookie_name + "="
+                var decodedCookie = decodeURIComponent(document.cookie)
+                var ca = decodedCookie.split(';')
+
+                for(var i = 0; i <ca.length; i++) 
+                {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') 
+                    {
+                      c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) 
+                    {
+                      return c.substring(name.length, c.length)
+                    }
+                }
+                return ""
+            }
+
+            function checkspotify()
+            {
+                // Contacting spotify for track info
+                $.ajax({
+                    type: "GET",
+                    url: "https://api.spotify.com/v1/me/player/currently-playing",
+
+                    headers: {
+                        "content-type": "application/x-www-form-urlencoded",
+                        "Authorization": "Bearer " + getcookie("session")
+                    }
+                }).done(function(data){
+                    var item = data.item.uri
+
+                    if(item == track)
+                        return
+                    else
+                    {
+                        send(item)
+                        track = item
+                    }
+                })
+
+                setTimeout(checkspotify, 700)
+            }
+
+            function send(track)
+            {
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:1337/api/update/",
+                                        
+                    data: {
+                        track: track
+                    },
+
+                    headers: {
+                        "content-type": "application/x-www-form-urlencoded",
+                        "Authorization": "Bearer " + getcookie("session")
+                    },
+                })
+            }
+            
+            $(document).ready(function(){
+                if(getcookie("host") == "1")
+                    checkspotify()
+            })
