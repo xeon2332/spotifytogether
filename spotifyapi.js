@@ -3,7 +3,6 @@ var querystring = require('querystring')
 
 exports.play = function(token, track)
 {
-    console.log("Playing track " + track + " to user: " + token)
     var trackarr = [track]
 
     request({

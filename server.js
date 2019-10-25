@@ -15,6 +15,7 @@ var con = mysql.createConnection({
     password: ""
 })
 
+app.use('/static', express.static(path.join(__dirname, 'client-js')))
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
@@ -68,7 +69,7 @@ app.get("/spotifylogin/", function(req, res){
         url: "https://accounts.spotify.com/api/token",
         form: {
             grant_type: "authorization_code",
-            code: req.query.code, 
+            code: req.query.code,
             redirect_uri: "http://localhost:1337/spotifylogin/",
             client_id: "e1e37ca062f34bfe91907973c15353ca",
             client_secret: "****"
