@@ -6,7 +6,7 @@ const path = require("path")
 const request = require("request")
 var cookieParser = require('cookie-parser')
 app.use(cookieParser())
-const sapi = require("./spotifyapi.js")
+const sapi = require("./server-js/spotifyapi.js")
 const port = 1337
 
 var con = mysql.createConnection({
@@ -24,7 +24,8 @@ con.connect(function(err){
     console.log("Connected to mysql server");
 })
 
-const api = require("./api.js")(app, con)
+const api = require("./server-js/api.js")(app, con)
+const token = require("./server-js/token.js")
 
 app.get("/", function(req, res){
     if(req.cookies.session == null)
@@ -39,10 +40,10 @@ app.get("/createlobby/", function(req, res){
     var expiration = Math.floor((new Date().getTime() / 1000) + 3600)
     var host = req.cookies.session
     var sql = "INSERT INTO spotifytogether.lobbies (lobby_id, host, expiration) VALUES ( '" + lobby_id + "','" + host + "','" + expiration + "')"
-    
+
     con.query(sql, function(err, result){
         if(err) throw err
-        
+
         res.cookie("host", "1").redirect("/lobby/" + lobby_id)
     })
 })
@@ -53,9 +54,12 @@ app.get("/lobby/:id", function(req, res){
         var lobby_id = req.params.id
         var session = req.cookies.session
         var sql = "UPDATE spotifytogether.lobbies SET guests='" + session + "' WHERE lobby_id='" + lobby_id + "'"
-        
+
         con.query(sql, function(err, result){
-            res.render("lobby", { msg: "joined lobby" })  
+            // Play song on joining accounts player
+            spotifyapi.play
+
+            res.render("lobby", { msg: "joined lobby" })
         })
     }
     else
@@ -81,14 +85,14 @@ app.get("/spotifylogin/", function(req, res){
         if(ress.statusCode == 200)
         {
             var j = JSON.parse(body)
-            
+
             var date = new Date()
             var expiration = Math.round(date.getTime() / 1000) + j["expires_in"]
-            
+
             // Storing in database
-            var sql = "INSERT INTO spotifytogether.users (sessionkey, access_token, refresh_token, expiration) VALUES ('test', '" + 
+            var sql = "INSERT INTO spotifytogether.users (sessionkey, access_token, refresh_token, expiration) VALUES ('test', '" +
                 j['access_token'] + "','" + j['refresh_token'] + "','" + expiration + "')"
-            
+
             con.query(sql, function(err, result){
                 if(err) throw err
                 console.log("inserted")
@@ -96,7 +100,7 @@ app.get("/spotifylogin/", function(req, res){
                     .cookie("session", j["access_token"])
                     .redirect("http://localhost:1337")
             })
-            
+
         }
     })
 })

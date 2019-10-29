@@ -9,14 +9,14 @@ module.exports = function(app, con)
     app.post("/api/update/", function(req, res){
         console.log(req.body.track)
         var session = req.cookies.session
-        
+
         var lobbysql = "SELECT * FROM spotifytogether.lobbies WHERE host='" + session + "'";
 
         con.query(lobbysql, function(err, result){
             if(err) throw err
             var lobby = result[0].lobby_id
             var users = result[0].guests
-            
+
             spotifyapi.play(users, req.body.track)
         })
     })
