@@ -5,10 +5,25 @@ var conn = null;
 // Setup function to setup connection variable
 exports.setup = function(con)
 {
-    if(con.state == "disconnected")
-        console.log("Failed during setup of token functions.")
-    else
-        conn = con
+    conn = con
+}
+
+exports.gensession = function(access_token, refresh_token, expiration, callback)
+{
+    // Generating session key
+    var session = ""
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (var i = 0; i < 200; i++) {
+        session += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+
+    // Inserting token into mysql
+    execquery(
+      "INSERT INTO spotifytogether.users (session, access_token, refresh_token, expiration) VALUES ('" +
+      session + "','" + access_token + "', '" +
+      refresh_token + "', '" + expiration + "')", function(result){
+          return callback(session)
+      })
 }
 
 function execquery(query, callback)

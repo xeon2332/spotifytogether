@@ -27,6 +27,8 @@ con.connect(function(err){
 const api = require("./server-js/api.js")(app, con)
 const token = require("./server-js/token.js")
 
+token.setup(con)
+
 app.get("/", function(req, res){
     if(req.cookies.session == null)
         res.sendFile(path.join(__dirname+"/index.html"))
@@ -85,22 +87,16 @@ app.get("/spotifylogin/", function(req, res){
         if(ress.statusCode == 200)
         {
             var j = JSON.parse(body)
-
             var date = new Date()
             var expiration = Math.round(date.getTime() / 1000) + j["expires_in"]
 
             // Storing in database
-            var sql = "INSERT INTO spotifytogether.users (sessionkey, access_token, refresh_token, expiration) VALUES ('test', '" +
-                j['access_token'] + "','" + j['refresh_token'] + "','" + expiration + "')"
-
-            con.query(sql, function(err, result){
-                if(err) throw err
-                console.log("inserted")
+            token.gensession(j["access_token"], j["refresh_token"], expiration,
+            function(session){
                 res
-                    .cookie("session", j["access_token"])
+                    .cookie("session", session, { maxAge: parseInt(expiration, 10) })
                     .redirect("http://localhost:1337")
             })
-
         }
     })
 })
