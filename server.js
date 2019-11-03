@@ -92,7 +92,7 @@ app.get("/spotifylogin/", function(req, res){
             code: req.query.code,
             redirect_uri: "http://localhost:1337/spotifylogin/",
             client_id: "e1e37ca062f34bfe91907973c15353ca",
-            client_secret: "62a3c2a28e9d4ab3864a411dd38d27d7"
+            client_secret: "****"
         },
         headers: {
             "content-type": "application/x-www-form-urlencoded"
