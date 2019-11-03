@@ -3,11 +3,12 @@ const path = require("path")
 const request = require("request")
 var cookieParser = require('cookie-parser')
 const spotifyapi = require("./spotifyapi.js")
+const token = require("./token.js")
 
 module.exports = function(app, con)
 {
+    token.setup(con)
     app.post("/api/update/", function(req, res){
-        console.log(req.body.track)
         var session = req.cookies.session
 
         var lobbysql = "SELECT * FROM spotifytogether.lobbies WHERE host='" + session + "'";
@@ -17,7 +18,9 @@ module.exports = function(app, con)
             var lobby = result[0].lobby_id
             var users = result[0].guests
 
-            spotifyapi.play(users, req.body.track)
+            token.gettoken(result[0].guests, function(token){
+                spotifyapi.play(token, req.body.track)
+            })
         })
     })
 }

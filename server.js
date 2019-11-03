@@ -24,8 +24,8 @@ con.connect(function(err){
     console.log("Connected to mysql server");
 })
 
-const api = require("./server-js/api.js")(app, con)
 const token = require("./server-js/token.js")
+const api = require("./server-js/api.js")(app, con)
 
 token.setup(con)
 

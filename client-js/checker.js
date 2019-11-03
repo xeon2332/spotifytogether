@@ -1,5 +1,6 @@
 // Global variables
-var track = ""
+var str = $(location).attr("pathname")
+var id = str.substring(str.indexOf("/", 2) + 1, str.length)
 
 function getcookie(cookie_name)
 {
@@ -34,13 +35,11 @@ function checkspotify()
             "Authorization": "Bearer " + getcookie("token")
         }
     }).done(function(data){
-        var j = JSON.parse(data)
-        var item = j["item"]["uri"]
-
-        if(item == track)
-            return
-        else
-            send(track)
+        var item = data["item"]["uri"]
+        console.log("cookie " + getcookie("track"))
+        console.log("local " + item)
+        if(getcookie("track") != item)
+            send(item)
     })
 
     setTimeout(checkspotify, 350)
@@ -48,12 +47,14 @@ function checkspotify()
 
 function send(track)
 {
+    document.cookie = "track=" + track
     $.ajax({
-        type: "PUT",
-        url: "localhost:1337/api/play/",
+        type: "post",
+        url: "http://localhost:1337/api/update/",
 
-        forms: {
-            track: track
+        data: {
+            track: track,
+            lobby: id
         },
 
         headers: {

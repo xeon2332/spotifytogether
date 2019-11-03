@@ -3,11 +3,14 @@ html
         title= spotifytogether
     body
         h1= msg
-        
+
         script(src="/static/jquery-3.4.1.min.js")
         script(src="/static/checker.js" type="text/javascript")
         script.
             $(document).ready(function(){
-                if(getcookie("host") == "1")
+                var str = $(location).attr("pathname")
+                var id = str.substring(str.indexOf("/", 2) + 1, str.length)
+                
+                if(getcookie("hosting") == id)
                     checkspotify()
             })
