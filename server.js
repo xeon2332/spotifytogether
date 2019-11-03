@@ -46,27 +46,41 @@ app.get("/createlobby/", function(req, res){
     con.query(sql, function(err, result){
         if(err) throw err
 
-        res.cookie("host", "1").redirect("/lobby/" + lobby_id)
+        token.gettoken(req.cookies.session, function(token){
+            res
+                .cookie("hosting", lobby_id)
+                .cookie("token", token)
+                .redirect("/lobby/" + lobby_id)
+        })
     })
 })
 
 app.get("/lobby/:id", function(req, res){
-    if(req.cookies.host == null)
+    var lobby_id = req.params.id
+    if(req.cookies.hosting == lobby_id)
+        res.render("lobby", { msg: "hosting lobby " + lobby_id })
+    else
     {
-        var lobby_id = req.params.id
         var session = req.cookies.session
-        var sql = "UPDATE spotifytogether.lobbies SET guests='" + session + "' WHERE lobby_id='" + lobby_id + "'"
+        var sql = "UPDATE spotifytogether.lobbies SET guests='" + session
+                + "' WHERE lobby_id='" + lobby_id + "'"
 
         con.query(sql, function(err, result){
-            // Play song on joining accounts player
-            spotifyapi.play
+            var host_sql = "SELECT host FROM spotifytogether.lobbies WHERE lobby_id='" +
+                           lobby_id + "'"
+            con.query(host_sql, function(err, result){
+                token.gettoken(result[0].host, function(htoken){
+                    // Play song on joining accounts player
+                    sapi.getsong(htoken, function(track){
+                        token.gettoken(req.cookies.session, function(ltoken){
+                            sapi.play(ltoken, track)
+                        })
+                    })
+                })
+            })
 
             res.render("lobby", { msg: "joined lobby" })
         })
-    }
-    else
-    {
-        res.render("lobby", { msg: "hosting lobby " + req.params.id })
     }
 })
 
@@ -78,7 +92,7 @@ app.get("/spotifylogin/", function(req, res){
             code: req.query.code,
             redirect_uri: "http://localhost:1337/spotifylogin/",
             client_id: "e1e37ca062f34bfe91907973c15353ca",
-            client_secret: "****"
+            client_secret: "62a3c2a28e9d4ab3864a411dd38d27d7"
         },
         headers: {
             "content-type": "application/x-www-form-urlencoded"

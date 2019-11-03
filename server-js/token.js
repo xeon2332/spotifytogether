@@ -48,6 +48,6 @@ exports.gettoken = function(session, callback)
     var sql = "SELECT access_token FROM spotifytogether.users WHERE session='"
               + session + "'"
     execquery(sql, function(result){
-        callback(result[0].token)
+        callback(result[0].access_token)
     })
 }
