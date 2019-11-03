@@ -36,8 +36,6 @@ function checkspotify()
         }
     }).done(function(data){
         var item = data["item"]["uri"]
-        console.log("cookie " + getcookie("track"))
-        console.log("local " + item)
         if(getcookie("track") != item)
             send(item)
     })

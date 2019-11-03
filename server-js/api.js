@@ -31,7 +31,6 @@ function getlobby(session, con)
 
     con.query(sql, function(err, result){
         if(err) throw err
-        console.log(result[0].lobby_id + "   1")
         return result[0].lobby_id
     })
 }
